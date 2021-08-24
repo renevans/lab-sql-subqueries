@@ -89,11 +89,22 @@ ORDER BY sum(amount) DESC
 limit 1)))));
 
 -- 8.  Customers who spent more than the average payments.
+-- Assumption: Average payment = average payment by customer
 
-SELECT first_name, last_name
+SELECT first_name, last_name, sum(amount)
 FROM customer 
-WHERE customer_id in
+JOIN payment
+USING (customer_id)
+GROUP BY customer_id
+HAVING customer_id in
 (SELECT customer_id from payment
 GROUP BY customer_id
 HAVING sum(amount) > (
-SELECT avg(amount) from payment));
+SELECT avg(amount) as average from (
+SELECT sum(amount) as amount from payment
+group by customer_id)sub1));
+
+
+SELECT avg(amount) from (
+SELECT sum(amount) as amount from payment
+group by customer_id)sub1;
